@@ -23,20 +23,23 @@ module.exports = function(grunt) {
         dev: {
             files: {
               //We fake the minified version here, which is produced properly by prod chain
-              'assets/css/style-min.css': 'assets/sass/style.scss'
+              'assets/css/style-min.css': 'assets/sass/screen.scss'
             }
         },
         dist: {
             files: {
-              'assets/css/style.css': 'assets/sass/style.scss'
+              'assets/css/style.css': 'assets/sass/screen.scss'
             }
         }
     },
-    autoprefixer: {
+    postcss: {
+      options: {
+        map: false,
+        processors: [
+          require('autoprefixer')({browsers: ['last 1 version', '> 1%', 'ie 8']})
+        ]
+      },
       dist: {
-        options: {
-          browsers: ['last 1 version', '> 1%', 'ie 8']
-        },
         files: {
           'assets/css/style-prefixed.css': ['assets/css/style.css']
         }
@@ -45,7 +48,7 @@ module.exports = function(grunt) {
     cssmin: {
       combine: {
         files: {
-          'assets/css/style-min.css': ['assets/css/style-prefixed.css']
+          'assets/css/style-min.css': ['assets/css/style-prefixed.css'/*, 'assets/css/vendors/*' */]
         },
       },
     },
@@ -92,8 +95,9 @@ module.exports = function(grunt) {
         ],
       },
       options: {
-        watchTask: true
-        server: true
+        watchTask: true,
+        server: false,
+        proxy: 'localhost:80'
       }
     },
     notify: {
@@ -127,7 +131,7 @@ module.exports = function(grunt) {
   // Load the Grunt plugins.
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-sass');
-  grunt.loadNpmTasks('grunt-autoprefixer');
+  grunt.loadNpmTasks('grunt-postcss');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-concat');
@@ -137,5 +141,5 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-babel');
   // Register the default tasks.
   grunt.registerTask('default', ['browserSync', 'watch', 'notify']);
-  grunt.registerTask('prod', ['sass:dist', 'autoprefixer', 'cssmin', 'jshint','babel','concat','uglify:scripts', 'notify:successProduction']);
+  grunt.registerTask('prod', ['sass:dist', 'postcss', 'cssmin', 'jshint','babel','concat','uglify:scripts', 'notify:successProduction']);
 };
